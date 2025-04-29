@@ -29,7 +29,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    const originalRequest = error.config;
+    // エラーメッセージを取得
+    const errorMessage = error.response?.data?.message || '通信エラーが発生しました';
     
     // トークン期限切れ（401エラー）の場合、ログアウト処理
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
@@ -42,6 +43,9 @@ api.interceptors.response.use(
         window.location.href = '/login?session=expired';
       }
     }
+    
+    // エラーを拡張してメッセージを含める
+    error.displayMessage = errorMessage;
     
     return Promise.reject(error);
   }

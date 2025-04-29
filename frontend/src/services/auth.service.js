@@ -53,6 +53,24 @@ const AuthService = {
   getProfile: async () => {
     try {
       const response = await api.get('/auth/profile');
+      // 最新のユーザー情報をローカルストレージに保存
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * ユーザープロフィール更新
+   * @param {Object} profileData - 更新するプロフィールデータ
+   * @returns {Promise} API レスポンス
+   */
+  updateProfile: async (profileData) => {
+    try {
+      const response = await api.put('/auth/profile', profileData);
+      // 更新されたユーザー情報をローカルストレージに保存
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
