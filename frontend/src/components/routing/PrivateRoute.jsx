@@ -1,8 +1,8 @@
+// frontend/src/components/routing/PrivateRoute.jsx
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
-// 認証済みユーザーのみアクセス可能なルート
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 

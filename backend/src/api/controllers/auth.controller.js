@@ -18,16 +18,32 @@ const generateToken = (userId) => {
   );
 };
 
-// ユーザー登録
+// ユーザー登録 (トランザクション対応版)
 const register = async (req, res) => {
+  // トランザクション開始
+  const transaction = await sequelize.transaction();
+  
   try {
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName, role, companyName } = req.body;
 
     // メールアドレスが既に使用されているかチェック
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ 
+      where: { email },
+      transaction 
+    });
+    
     if (existingUser) {
+      await transaction.rollback();
       return res.status(400).json({ 
         message: 'このメールアドレスは既に登録されています' 
+      });
+    }
+
+    // パスワード強度チェック (オプション)
+    if (password.length < 8) {
+      await transaction.rollback();
+      return res.status(400).json({ 
+        message: 'パスワードは8文字以上である必要があります' 
       });
     }
 
@@ -38,19 +54,22 @@ const register = async (req, res) => {
       firstName,
       lastName,
       role
-    });
+    }, { transaction });
 
     // ロールに応じたプロフィール作成
     if (role === 'affiliate') {
       await AffiliateProfile.create({
         userId: user.id
-      });
+      }, { transaction });
     } else if (role === 'advertiser') {
       await AdvertiserProfile.create({
         userId: user.id,
-        companyName: `${firstName} ${lastName}` // 初期値として名前を設定
-      });
+        companyName: companyName || `${firstName} ${lastName}` // 会社名が提供されていれば使用、なければ名前を使用
+      }, { transaction });
     }
+
+    // トランザクションをコミット
+    await transaction.commit();
 
     // トークン生成
     const token = generateToken(user.id);
@@ -70,6 +89,9 @@ const register = async (req, res) => {
       user: userWithoutPassword
     });
   } catch (error) {
+    // エラー発生時はトランザクションをロールバック
+    await transaction.rollback();
+    
     logger.error('Registration error:', error);
     res.status(500).json({ message: 'ユーザー登録中にエラーが発生しました' });
   }

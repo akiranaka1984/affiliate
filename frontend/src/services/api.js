@@ -1,3 +1,4 @@
+// frontend/src/services/api.js
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
@@ -29,8 +30,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // エラーメッセージを取得
-    const errorMessage = error.response?.data?.message || '通信エラーが発生しました';
+    const originalRequest = error.config;
     
     // トークン期限切れ（401エラー）の場合、ログアウト処理
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
@@ -43,9 +43,6 @@ api.interceptors.response.use(
         window.location.href = '/login?session=expired';
       }
     }
-    
-    // エラーを拡張してメッセージを含める
-    error.displayMessage = errorMessage;
     
     return Promise.reject(error);
   }

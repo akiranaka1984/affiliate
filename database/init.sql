@@ -21,7 +21,47 @@ CREATE TABLE IF NOT EXISTS users (
   createdAt DATETIME NOT NULL,
   updatedAt DATETIME NOT NULL
 );
+-- 初期管理者アカウント作成（パスワード: admin123）
+INSERT INTO users (id, email, password, firstName, lastName, role, isActive, createdAt, updatedAt)
+VALUES (
+  UUID(),
+  'admin@example.com',
+  '$2a$10$XVOCXSwCvfXZJi/ZdxgYLe2f1QkR0UrdVkjM4eC3hkDT/R7Snyxzi', -- password: admin123
+  'Admin',
+  'User',
+  'admin',
+  1,
+  NOW(),
+  NOW()
+);
 
+-- テスト用アフィリエイトアカウント作成（パスワード: password123）
+INSERT INTO users (id, email, password, firstName, lastName, role, isActive, createdAt, updatedAt)
+VALUES (
+  UUID(),
+  'affiliate@example.com',
+  '$2a$10$6C9mRfRlI4Y49vKrv0UGEO1n1xnC4WZHiDvHPXrjnIPRmJbg2oVBu', -- password: password123
+  'Test',
+  'Affiliate',
+  'affiliate',
+  1,
+  NOW(),
+  NOW()
+);
+
+-- テスト用広告主アカウント作成（パスワード: password123）
+INSERT INTO users (id, email, password, firstName, lastName, role, isActive, createdAt, updatedAt)
+VALUES (
+  UUID(),
+  'advertiser@example.com',
+  '$2a$10$6C9mRfRlI4Y49vKrv0UGEO1n1xnC4WZHiDvHPXrjnIPRmJbg2oVBu', -- password: password123
+  'Test',
+  'Advertiser',
+  'advertiser',
+  1,
+  NOW(),
+  NOW()
+);
 -- アフィリエイトプロフィールテーブル
 CREATE TABLE IF NOT EXISTS affiliate_profiles (
   id VARCHAR(36) NOT NULL PRIMARY KEY,

@@ -1,3 +1,4 @@
+// backend/src/models/user.model.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const bcrypt = require('bcryptjs');
@@ -44,14 +45,6 @@ const User = sequelize.define('User', {
   lastLogin: {
     type: DataTypes.DATE,
     allowNull: true
-  },
-  resetToken: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  resetTokenExpiry: {
-    type: DataTypes.DATE,
-    allowNull: true
   }
 }, {
   tableName: 'users',
@@ -71,10 +64,5 @@ const User = sequelize.define('User', {
     }
   }
 });
-
-// パスワード検証メソッド
-User.prototype.validatePassword = async function(password) {
-  return await bcrypt.compare(password, this.password);
-};
 
 module.exports = { User };

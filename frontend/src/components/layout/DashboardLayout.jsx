@@ -1,23 +1,24 @@
+// frontend/src/components/layout/DashboardLayout.jsx
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
-// Heroicons v2
-import {
-  Bars3Icon as MenuIcon,
-  XMarkIcon as XIcon,
-  HomeIcon,
-  UsersIcon,
-  CreditCardIcon,
-  Cog6ToothIcon as CogIcon,
-  LinkIcon,
-  ArrowRightOnRectangleIcon as LogoutIcon,
-  ChartPieIcon,
-  BellIcon,
-  MagnifyingGlassIcon as SearchIcon,
-  UserCircleIcon
-} from '@heroicons/react/24/outline';
+// Heroicons の代わりに Lucide React を使用
+import { 
+  Menu as MenuIcon,
+  X as XIcon,
+  Home as HomeIcon,
+  Users as UsersIcon,
+  CreditCard,
+  Settings as CogIcon,
+  Link as LinkIcon,
+  LogOut as LogoutIcon,
+  PieChart as ChartPieIcon,
+  Bell as BellIcon,
+  Search as SearchIcon,
+  UserCircle as UserCircleIcon
+} from 'lucide-react';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -36,7 +37,7 @@ const DashboardLayout = () => {
         ...baseNavItems,
         { name: 'ユーザー管理', path: '/admin/users', icon: UsersIcon },
         { name: 'キャンペーン管理', path: '/admin/campaigns', icon: ChartPieIcon },
-        { name: '支払い管理', path: '/admin/payments', icon: CreditCardIcon },
+        { name: '支払い管理', path: '/admin/payments', icon: CreditCard },
         { name: '設定', path: '/settings', icon: CogIcon },
       ];
     } else if (user?.role === 'advertiser') {
@@ -44,7 +45,7 @@ const DashboardLayout = () => {
         ...baseNavItems,
         { name: 'キャンペーン管理', path: '/advertiser/campaigns', icon: ChartPieIcon },
         { name: 'アフィリエイト', path: '/advertiser/affiliates', icon: UsersIcon },
-        { name: '支払い履歴', path: '/advertiser/payments', icon: CreditCardIcon },
+        { name: '支払い履歴', path: '/advertiser/payments', icon: CreditCard },
         { name: '設定', path: '/settings', icon: CogIcon },
       ];
     } else {
@@ -52,7 +53,7 @@ const DashboardLayout = () => {
         ...baseNavItems,
         { name: 'キャンペーン一覧', path: '/affiliate/campaigns', icon: ChartPieIcon },
         { name: 'アフィリエイトリンク', path: '/affiliate/links', icon: LinkIcon },
-        { name: '報酬履歴', path: '/affiliate/earnings', icon: CreditCardIcon },
+        { name: '報酬履歴', path: '/affiliate/earnings', icon: CreditCard },
         { name: '設定', path: '/settings', icon: CogIcon },
       ];
     }
@@ -75,8 +76,8 @@ const DashboardLayout = () => {
         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-gradient-to-b from-indigo-800 to-indigo-900 shadow-xl">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               onClick={() => setSidebarOpen(false)}
+              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             >
               <span className="sr-only">Close sidebar</span>
               <XIcon className="h-6 w-6 text-white" aria-hidden="true" />

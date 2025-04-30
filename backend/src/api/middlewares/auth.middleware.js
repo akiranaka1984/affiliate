@@ -27,7 +27,7 @@ const authenticate = async (req, res, next) => {
     const token = parts[1];
     
     // トークンを検証
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production');
     
     // ユーザーIDからユーザー情報を取得
     const user = await User.findByPk(decoded.id, {
