@@ -65,4 +65,9 @@ const User = sequelize.define('User', {
   }
 });
 
+// パスワード検証のためのインスタンスメソッドを追加
+User.prototype.validatePassword = async function(password) {
+  return bcrypt.compare(password, this.password);
+};
+
 module.exports = { User };

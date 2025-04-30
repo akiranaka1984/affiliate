@@ -1,15 +1,13 @@
+// frontend/src/App.js
 import React from 'react';
 import AppRoutes from './routes';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (
     <>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <AppRoutes />
       <ToastContainer
         position="top-right"
         autoClose={5000}
