@@ -1,5 +1,7 @@
+// frontend/src/contexts/AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 import AuthService from '../services/auth.service';
+import { toast } from 'react-toastify';
 
 // 認証コンテキストを作成
 export const AuthContext = createContext();
@@ -9,38 +11,23 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // 初期化時に認証状態をチェック
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        if (AuthService.isTokenValid()) {
-          // 有効なトークンがある場合、ユーザープロフィールを取得
-          const userData = AuthService.getCurrentUser();
-          
-          if (userData) {
-            // トークンが有効でも、最新のユーザー情報を取得
-            try {
-              const profile = await AuthService.getProfile();
-              setUser(profile.user);
-            } catch (profileError) {
-              // プロフィール取得に失敗した場合はローカルストレージのデータを使用
-              setUser(userData);
-            }
-            
-            setIsAuthenticated(true);
-          }
+      // ローカルストレージにトークンがあるか確認
+      if (AuthService.isTokenValid()) {
+        try {
+          // プロフィール情報を取得
+          const response = await AuthService.getProfile();
+          setUser(response.data.user);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('認証チェックエラー:', error);
+          AuthService.logout();
         }
-      } catch (err) {
-        console.error('Auth check error:', err);
-        // エラー時は認証状態をリセット
-        AuthService.logout();
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     checkAuth();
@@ -49,28 +36,36 @@ export const AuthProvider = ({ children }) => {
   // ログイン処理
   const login = async (credentials) => {
     try {
-      setError(null);
       const response = await AuthService.login(credentials);
       setUser(response.user);
       setIsAuthenticated(true);
+      toast.success('ログインに成功しました');
       return response;
-    } catch (err) {
-      setError(err.response?.data?.message || 'ログイン中にエラーが発生しました');
-      throw err;
+    } catch (error) {
+      let errorMessage = 'ログインに失敗しました';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      toast.error(errorMessage);
+      throw error;
     }
   };
 
   // 登録処理
   const register = async (userData) => {
     try {
-      setError(null);
       const response = await AuthService.register(userData);
       setUser(response.user);
       setIsAuthenticated(true);
+      toast.success('アカウント登録が完了しました');
       return response;
-    } catch (err) {
-      setError(err.response?.data?.message || '登録中にエラーが発生しました');
-      throw err;
+    } catch (error) {
+      let errorMessage = 'アカウント登録に失敗しました';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      toast.error(errorMessage);
+      throw error;
     }
   };
 
@@ -79,30 +74,43 @@ export const AuthProvider = ({ children }) => {
     AuthService.logout();
     setUser(null);
     setIsAuthenticated(false);
-  };
-
-  // プロフィール更新処理
-  const updateProfile = async (profileData) => {
-    try {
-      setError(null);
-      const response = await AuthService.updateProfile(profileData);
-      setUser(prev => ({ ...prev, ...response.user }));
-      return response;
-    } catch (err) {
-      setError(err.response?.data?.message || 'プロフィール更新中にエラーが発生しました');
-      throw err;
-    }
+    toast.info('ログアウトしました');
   };
 
   // パスワード変更処理
   const changePassword = async (passwordData) => {
     try {
-      setError(null);
       const response = await AuthService.changePassword(passwordData);
+      toast.success('パスワードを変更しました');
       return response;
-    } catch (err) {
-      setError(err.response?.data?.message || 'パスワード変更中にエラーが発生しました');
-      throw err;
+    } catch (error) {
+      let errorMessage = 'パスワード変更に失敗しました';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      toast.error(errorMessage);
+      throw error;
+    }
+  };
+
+  // プロフィール更新
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await AuthService.updateProfile(profileData);
+      // ユーザー情報を更新
+      setUser(prev => ({
+        ...prev,
+        ...response.user
+      }));
+      toast.success('プロフィールを更新しました');
+      return response;
+    } catch (error) {
+      let errorMessage = 'プロフィール更新に失敗しました';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      toast.error(errorMessage);
+      throw error;
     }
   };
 
@@ -111,12 +119,11 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     user,
     loading,
-    error,
     login,
     register,
     logout,
-    updateProfile,
-    changePassword
+    changePassword,
+    updateProfile
   };
 
   return (

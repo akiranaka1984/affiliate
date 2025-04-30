@@ -90,6 +90,15 @@ router.post(
   validate,
   campaignController.generateAffiliateLink
 );
+// アフィリエイトがキャンペーンに参加する
+router.post(
+  '/:id/join',
+  authenticate,
+  authorize('affiliate'),
+  idValidation,
+  validate,
+  campaignController.joinCampaign
+);
 
 // -------------------- 共通ルート --------------------
 

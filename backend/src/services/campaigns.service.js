@@ -383,6 +383,8 @@ class CampaignService {
       throw error;
     }
   }
+
+  
 }
 
 module.exports = new CampaignService();

@@ -1,6 +1,10 @@
+// frontend/src/services/auth.service.js
 import api from './api';
 import jwtDecode from 'jwt-decode';
 
+/**
+ * 認証関連の API サービス
+ */
 const AuthService = {
   /**
    * ユーザー登録
@@ -53,8 +57,6 @@ const AuthService = {
   getProfile: async () => {
     try {
       const response = await api.get('/auth/profile');
-      // 最新のユーザー情報をローカルストレージに保存
-      localStorage.setItem('user', JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
@@ -62,15 +64,17 @@ const AuthService = {
   },
 
   /**
-   * ユーザープロフィール更新
-   * @param {Object} profileData - 更新するプロフィールデータ
+   * プロフィール更新
+   * @param {Object} profileData - プロフィールデータ
    * @returns {Promise} API レスポンス
    */
   updateProfile: async (profileData) => {
     try {
       const response = await api.put('/auth/profile', profileData);
-      // 更新されたユーザー情報をローカルストレージに保存
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      // ローカルストレージのユーザー情報も更新
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
       return response.data;
     } catch (error) {
       throw error;
@@ -96,9 +100,13 @@ const AuthService = {
    * @returns {Object|null} 現在のユーザー情報
    */
   getCurrentUser: () => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return null;
-    return JSON.parse(userStr);
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (error) {
+      console.error('ユーザー情報の解析エラー:', error);
+      return null;
+    }
   },
 
   /**

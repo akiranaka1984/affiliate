@@ -11,7 +11,9 @@ const affiliatesRoutes = require('./api/routes/affiliates.routes');
 const trackingRoutes = require('./api/routes/tracking.routes');
 const paymentsRoutes = require('./api/routes/payments.routes');
 
+
 const app = express();
+const affiliateLinksRoutes = require('./api/routes/affiliate-links.routes');
 
 // ミドルウェア
 app.use(helmet());
@@ -27,6 +29,14 @@ app.use('/api/campaigns', campaignsRoutes);
 app.use('/api/affiliates', affiliatesRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/payments', paymentsRoutes);
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/campaigns', campaignsRoutes);
+app.use('/api/affiliates', affiliatesRoutes);
+app.use('/api/tracking', trackingRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/affiliate-links', affiliateLinksRoutes);
 
 // ヘルスチェックエンドポイント
 app.get('/health', (req, res) => {

@@ -1,222 +1,257 @@
+// src/controllers/campaign.controller.js
+/* eslint-disable consistent-return */  // 例: ESLint を使う場合の無限 return 防止
 const campaignService = require('../../services/campaigns.service');
-const logger = require('../../config/logger');
+const logger          = require('../../config/logger');
 
 /**
  * キャンペーンコントローラー
- * キャンペーン関連のエンドポイントハンドラー
+ * ──────────────────────────────────────────
+ * すべてのハンドラは「try / catch」を備え、
+ *   ・正常系は res.status(xxx).json(...)
+ *   ・異常系はエラーログ + 適切な HTTP ステータス
+ * で応答します。
  */
 class CampaignController {
   /**
+   * POST /campaigns
    * 新しいキャンペーンを作成
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
    */
   async createCampaign(req, res) {
     try {
-      const campaignData = req.body;
       const advertiserId = req.user.id;
-      
-      const campaign = await campaignService.createCampaign(campaignData, advertiserId);
-      
-      res.status(201).json({
+      const campaignData = { ...req.body, advertiserId };
+
+      const campaign = await campaignService.createCampaign(campaignData);
+
+      return res.status(201).json({
         message: 'キャンペーンを作成しました',
-        campaign
+        campaign,
       });
-    } catch (error) {
-      logger.error('キャンペーン作成コントローラーエラー:', error);
-      res.status(500).json({
-        message: error.message || 'キャンペーンの作成中にエラーが発生しました'
+    } catch (err) {
+      logger.error('キャンペーン作成コントローラーエラー:', err);
+      return res.status(500).json({
+        message: err.message || 'キャンペーンの作成中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
+   * PATCH /campaigns/:id
    * キャンペーンを更新
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
    */
   async updateCampaign(req, res) {
     try {
-      const { id } = req.params;
-      const campaignData = req.body;
+      const id           = Number(req.params.id);
       const advertiserId = req.user.id;
-      
+      const campaignData = req.body;
+
       const campaign = await campaignService.updateCampaign(id, campaignData, advertiserId);
-      
-      res.status(200).json({
+
+      return res.status(200).json({
         message: 'キャンペーンを更新しました',
-        campaign
+        campaign,
       });
-    } catch (error) {
-      logger.error('キャンペーン更新コントローラーエラー:', error);
-      
-      if (error.message.includes('権限がありません') || error.message.includes('見つかりません')) {
-        return res.status(404).json({ message: error.message });
+    } catch (err) {
+      logger.error('キャンペーン更新コントローラーエラー:', err);
+
+      if (err.message?.includes('権限がありません') || err.message?.includes('見つかりません')) {
+        return res.status(404).json({ message: err.message });
       }
-      
-      res.status(500).json({
-        message: error.message || 'キャンペーンの更新中にエラーが発生しました'
+      return res.status(500).json({
+        message: err.message || 'キャンペーンの更新中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
+   * DELETE /campaigns/:id
    * キャンペーンを削除
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
    */
   async deleteCampaign(req, res) {
     try {
-      const { id } = req.params;
+      const id           = Number(req.params.id);
       const advertiserId = req.user.id;
-      
+
       await campaignService.deleteCampaign(id, advertiserId);
-      
-      res.status(200).json({
-        message: 'キャンペーンを削除しました'
-      });
-    } catch (error) {
-      logger.error('キャンペーン削除コントローラーエラー:', error);
-      
-      if (error.message.includes('権限がありません') || error.message.includes('見つかりません')) {
-        return res.status(404).json({ message: error.message });
+
+      return res.status(200).json({ message: 'キャンペーンを削除しました' });
+    } catch (err) {
+      logger.error('キャンペーン削除コントローラーエラー:', err);
+
+      if (err.message?.includes('権限がありません') || err.message?.includes('見つかりません')) {
+        return res.status(404).json({ message: err.message });
       }
-      
-      res.status(500).json({
-        message: error.message || 'キャンペーンの削除中にエラーが発生しました'
+      return res.status(500).json({
+        message: err.message || 'キャンペーンの削除中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
-   * IDによるキャンペーン取得
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
+   * GET /campaigns/:id
+   * ID によるキャンペーン取得
    */
   async getCampaignById(req, res) {
     try {
-      const { id } = req.params;
-      
+      const id = Number(req.params.id);
+
       const campaign = await campaignService.getCampaignById(id);
-      
       if (!campaign) {
         return res.status(404).json({ message: 'キャンペーンが見つかりません' });
       }
-      
-      res.status(200).json(campaign);
-    } catch (error) {
-      logger.error('キャンペーン取得コントローラーエラー:', error);
-      res.status(500).json({
-        message: error.message || 'キャンペーンの取得中にエラーが発生しました'
+      return res.status(200).json(campaign);
+    } catch (err) {
+      logger.error('キャンペーン取得コントローラーエラー:', err);
+      return res.status(500).json({
+        message: err.message || 'キャンペーンの取得中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
-   * 広告主のキャンペーン一覧を取得
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
+   * GET /advertiser/campaigns
+   * 広告主のキャンペーン一覧
    */
   async getAdvertiserCampaigns(req, res) {
     try {
-      const advertiserId = req.user.id;
-      const { page, limit, search, status } = req.query;
-      
+      const advertiserId    = req.user.id;
+      const {
+        page   = 1,
+        limit  = 10,
+        search = '',
+        status = null,
+      } = req.query;
+
       const options = {
-        page: parseInt(page, 10) || 1,
-        limit: parseInt(limit, 10) || 10,
-        search: search || '',
-        status: status || null
+        page  : Number(page),
+        limit : Number(limit),
+        search,
+        status,
       };
-      
+
       const result = await campaignService.getAdvertiserCampaigns(advertiserId, options);
-      
-      res.status(200).json(result);
-    } catch (error) {
-      logger.error('広告主キャンペーン一覧コントローラーエラー:', error);
-      res.status(500).json({
-        message: error.message || 'キャンペーン一覧の取得中にエラーが発生しました'
+      return res.status(200).json(result);
+    } catch (err) {
+      logger.error('広告主キャンペーン一覧コントローラーエラー:', err);
+      return res.status(500).json({
+        message: err.message || 'キャンペーン一覧の取得中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
-   * アフィリエイト向けキャンペーン一覧を取得
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
+   * GET /affiliate/campaigns
+   * アフィリエイト向けキャンペーン一覧
    */
   async getAffiliateCampaigns(req, res) {
     try {
       const affiliateId = req.user.id;
-      const { page, limit, search, category, joined } = req.query;
-      
+      const {
+        page     = 1,
+        limit    = 10,
+        search   = '',
+        category = null,
+        joined   = 'false',
+      } = req.query;
+
       const options = {
-        page: parseInt(page, 10) || 1,
-        limit: parseInt(limit, 10) || 10,
-        search: search || '',
-        category: category || null,
-        joined: joined === 'true'
+        page    : Number(page),
+        limit   : Number(limit),
+        search,
+        category,
+        joined  : joined === 'true',
       };
-      
+
       const result = await campaignService.getAffiliateCampaigns(affiliateId, options);
-      
-      res.status(200).json(result);
-    } catch (error) {
-      logger.error('アフィリエイトキャンペーン一覧コントローラーエラー:', error);
-      res.status(500).json({
-        message: error.message || 'キャンペーン一覧の取得中にエラーが発生しました'
+      return res.status(200).json(result);
+    } catch (err) {
+      logger.error('アフィリエイトキャンペーン一覧コントローラーエラー:', err);
+      return res.status(500).json({
+        message: err.message || 'キャンペーン一覧の取得中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
+   * POST /campaigns/:campaignId/links
    * アフィリエイトリンクを生成
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
    */
   async generateAffiliateLink(req, res) {
     try {
-      const { campaignId } = req.params;
+      const campaignId  = Number(req.params.campaignId);
       const affiliateId = req.user.id;
-      const linkData = req.body;
-      
+      const linkData    = req.body;
+
       const affiliateLink = await campaignService.generateAffiliateLink(
         campaignId,
         affiliateId,
-        linkData
+        linkData,
       );
-      
-      res.status(201).json({
+
+      return res.status(201).json({
         message: 'アフィリエイトリンクを生成しました',
-        affiliateLink
+        affiliateLink,
       });
-    } catch (error) {
-      logger.error('アフィリエイトリンク生成コントローラーエラー:', error);
-      
-      if (error.message.includes('既に存在します') || error.message.includes('見つかりません')) {
-        return res.status(400).json({ message: error.message });
+    } catch (err) {
+      logger.error('アフィリエイトリンク生成コントローラーエラー:', err);
+
+      if (err.message?.includes('既に存在します') || err.message?.includes('見つかりません')) {
+        return res.status(400).json({ message: err.message });
       }
-      
-      res.status(500).json({
-        message: error.message || 'アフィリエイトリンクの生成中にエラーが発生しました'
+      return res.status(500).json({
+        message: err.message || 'アフィリエイトリンクの生成中にエラーが発生しました',
       });
     }
   }
-  
+
   /**
+   * GET /campaigns/categories
    * カテゴリ一覧を取得
-   * @param {Object} req - リクエストオブジェクト
-   * @param {Object} res - レスポンスオブジェクト
    */
-  async getCategories(req, res) {
+  async getCategories(_req, res) {
     try {
       const categories = await campaignService.getCategories();
-      
-      res.status(200).json(categories);
-    } catch (error) {
-      logger.error('カテゴリ一覧コントローラーエラー:', error);
-      res.status(500).json({
-        message: error.message || 'カテゴリ一覧の取得中にエラーが発生しました'
+      return res.status(200).json(categories);
+    } catch (err) {
+      logger.error('カテゴリ一覧コントローラーエラー:', err);
+      return res.status(500).json({
+        message: err.message || 'カテゴリ一覧の取得中にエラーが発生しました',
+      });
+    }
+  }
+
+  /**
+   * POST /campaigns/:id/join
+   * アフィリエイトがキャンペーンに参加
+   */
+  async joinCampaign(req, res) {
+    try {
+      const campaignId  = Number(req.params.id);
+      const affiliateId = req.user.id;
+      const linkData    = req.body;
+
+      // サービス層に「joinCampaign」を用意している場合はこちらを推奨
+      // const affiliateLink = await campaignService.joinCampaign(campaignId, affiliateId, linkData);
+
+      // ここでは generateAffiliateLink を再利用
+      const affiliateLink = await campaignService.generateAffiliateLink(
+        campaignId,
+        affiliateId,
+        linkData,
+      );
+
+      return res.status(201).json({
+        message: 'キャンペーンへの参加リクエストを受け付けました',
+        affiliateLink,
+      });
+    } catch (err) {
+      logger.error('キャンペーン参加コントローラーエラー:', err);
+
+      if (err.message?.includes('既に存在します') || err.message?.includes('見つかりません')) {
+        return res.status(400).json({ message: err.message });
+      }
+      return res.status(500).json({
+        message: err.message || 'キャンペーン参加処理中にエラーが発生しました',
       });
     }
   }

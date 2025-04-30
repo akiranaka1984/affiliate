@@ -241,7 +241,7 @@ const AffiliateApplications = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">ウェブサイト</p>
-                    
+                    <a
                       href={application.website}
                       target="_blank"
                       rel="noopener noreferrer"
